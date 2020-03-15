@@ -3,6 +3,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'sign_up_page.dart';
+import 'camera_page.dart';
 import 'package:asltranslate/resources/Auth.dart';
 
 class LoginPage extends StatefulWidget {
@@ -22,10 +23,13 @@ class LoginPageState extends State<LoginPage> {
   bool _requesting = false;
   bool _loginSuccessful = true;
 
-  // Display a Snackbar
-  void _displaySnackbar(msg) {
+  // Display a SnackBar
+  void _displaySnackBar(msg) {
     Scaffold.of(context).showSnackBar(SnackBar(
       content: Text(msg),
+      duration: const Duration(
+        seconds: 3
+      ),
     ));
   }
 
@@ -35,6 +39,25 @@ class LoginPageState extends State<LoginPage> {
     var passState = _passwordFormKey.currentState.validate();
     if (emailState == false || passState == false) return false;
     return true;
+  }
+
+  // Create New Camera Page
+  Route _createCameraPageRoute() {
+    return PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => CameraPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          var begin = Offset(0.0, 1.0);
+          var end = Offset.zero;
+          var curve = Curves.ease;
+
+          var tween =
+          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        });
   }
 
   // Create New Sign Up Page
@@ -93,8 +116,7 @@ class LoginPageState extends State<LoginPage> {
         controller: _passwordController,
         validator: (value) {
           if (value.isEmpty) return "Field Cannot Be Empty!";
-          if (_loginSuccessful == false)
-            return "Password Invalid or Account Does Not Exist!";
+          if (_loginSuccessful == false) return "Password Invalid or Account Does Not Exist!";
           return null;
         },
         obscureText: true,
@@ -118,32 +140,36 @@ class LoginPageState extends State<LoginPage> {
     return _authentication.signIn(email, password);
   }
 
+  // On Login Button Pressed
+  void _onPressed() {
+    if (!_verifyFields()) {
+      _displaySnackBar("Field(s) Cannot Be Empty!");
+      return;
+    }
+    _submit().then((value) {
+      setState(() {
+        if (value == null) {
+          _loginSuccessful = false;
+          if (_authentication.getErrorCode().toLowerCase().contains("email"))  _emailFormKey.currentState.validate();
+          else if (_authentication.getErrorCode().toLowerCase().contains("identifier")) _passwordFormKey.currentState.validate();
+          _loginSuccessful = true;
+          _displaySnackBar(_authentication.getErrorCode());
+        } else {
+          _loginSuccessful = true;
+          Navigator.of(context).push(_createCameraPageRoute());
+        }
+      });
+      setState(() {
+        _requesting = false;
+      });
+    });
+  }
+
   // Build Button Widget
   Widget _buildButton() {
     return _buildContainer(RaisedButton(
       onPressed: () {
-        if (!_verifyFields()) {
-          _displaySnackbar("Field(s) Cannot Be Empty!");
-          return;
-        }
-
-        final user = _submit().then((value) {
-          setState(() {
-            if (value == null) {
-              _displaySnackbar(_authentication.getErrorCode());
-              _loginSuccessful = false;
-              if (_authentication.getErrorCode().toLowerCase().contains("email"))  _emailFormKey.currentState.validate();
-              else if (_authentication.getErrorCode().toLowerCase().contains("password")) _passwordFormKey.currentState.validate();
-              _loginSuccessful = true;
-            } else {
-              _displaySnackbar("Login Successful");
-              _loginSuccessful = true;
-            }
-          });
-          setState(() {
-            _requesting = false;
-          });
-        });
+        _onPressed();
       },
       color: Colors.blueAccent,
       textColor: Colors.white,
