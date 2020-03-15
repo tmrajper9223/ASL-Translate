@@ -3,6 +3,7 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'sign_up_page.dart';
+import 'package:asltranslate/resources/Auth.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -16,49 +17,24 @@ class LoginPageState extends State<LoginPage> {
   final _emailController = new TextEditingController();
   final _passwordController = new TextEditingController();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _authentication = new Authentication();
 
   bool _requesting = false;
+  bool _loginSuccessful = true;
 
   // Display a Snackbar
   void _displaySnackbar(msg) {
-    Scaffold.of(context)
-        .showSnackBar(SnackBar(content: Text(msg),));
+    Scaffold.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+    ));
   }
 
   // Checks if Fields are Empty
   bool _verifyFields() {
-    if (!_emailFormKey.currentState.validate() ||
-        !_passwordFormKey.currentState.validate()) return false;
+    var emailState = _emailFormKey.currentState.validate();
+    var passState = _passwordFormKey.currentState.validate();
+    if (emailState == false || passState == false) return false;
     return true;
-  }
-
-  // Submit Info to Firebase Auth
-  Future<FirebaseUser> _submit() async {
-    final email = _emailController.text.toString().trim();
-    final password = _passwordController.text.toString().trim();
-    try {
-      final user = (await _auth.signInWithEmailAndPassword(
-              email: email, password: password))
-          .user;
-      return user;
-    } catch (e) {
-      setState(() {
-        _requesting = false;
-      });
-      final invalidCredentials = "Invalid Email And/Or Password";
-      final userDoesNotExist = "That Account Does Not Exists";
-      final serverError = "Internal Server Error";
-      if (e.code == "ERROR_INVALID_EMAIL" || e.code == "ERROR_WRONG_PASSWORD") {
-        _displaySnackbar(invalidCredentials);
-      } else if (e.code == "ERROR_USER_NOT_FOUND") {
-        _displaySnackbar(userDoesNotExist);
-      } else {
-        _displaySnackbar(serverError);
-      }
-      print(e.message);
-      return null;
-    }
   }
 
   // Create New Sign Up Page
@@ -80,6 +56,7 @@ class LoginPageState extends State<LoginPage> {
         });
   }
 
+  // Returns Title Widget
   Widget _buildTitle() {
     return _buildContainer(Text(
       "Sign Language Translator",
@@ -95,6 +72,7 @@ class LoginPageState extends State<LoginPage> {
         controller: _emailController,
         validator: (value) {
           if (value.isEmpty) return "Field Cannot Be Empty!";
+          if (_loginSuccessful == false) return _authentication.getErrorCode();
           return null;
         },
         decoration: InputDecoration(
@@ -115,6 +93,8 @@ class LoginPageState extends State<LoginPage> {
         controller: _passwordController,
         validator: (value) {
           if (value.isEmpty) return "Field Cannot Be Empty!";
+          if (_loginSuccessful == false)
+            return "Password Invalid or Account Does Not Exist!";
           return null;
         },
         obscureText: true,
@@ -128,24 +108,51 @@ class LoginPageState extends State<LoginPage> {
     ));
   }
 
+  // Submit Info to Firebase Auth
+  Future<FirebaseUser> _submit() async {
+    var email = _emailController.text.trim();
+    var password = _passwordController.text.trim();
+    setState(() {
+      _requesting = true;
+    });
+    return _authentication.signIn(email, password);
+  }
+
   // Build Button Widget
   Widget _buildButton() {
     return _buildContainer(RaisedButton(
       onPressed: () {
         if (!_verifyFields()) {
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text("Invalid Field(s)"),
-          ));
+          _displaySnackbar("Field(s) Cannot Be Empty!");
+          return;
         }
-        setState(() {
-          _requesting = true;
-        });
-        final user = _submit().then((_) {
+
+        final user = _submit().then((value) {
+          setState(() {
+            if (value == null) {
+              _displaySnackbar(_authentication.getErrorCode());
+              _loginSuccessful = false;
+              if (_authentication
+                  .getErrorCode()
+                  .toLowerCase()
+                  .contains("email")) {
+                _emailFormKey.currentState.validate();
+              } else if (_authentication
+                  .getErrorCode()
+                  .toLowerCase()
+                  .contains("password")) {
+                _passwordFormKey.currentState.validate();
+              }
+              _loginSuccessful = true;
+            } else {
+              _displaySnackbar("Login Successful");
+              _loginSuccessful = true;
+            }
+          });
           setState(() {
             _requesting = false;
           });
         });
-        print("Good");
       },
       color: Colors.blueAccent,
       textColor: Colors.white,
@@ -206,18 +213,12 @@ class LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                title,
-                email,
-                password,
-                loginButton,
-                signUp
-              ],
+              children: <Widget>[title, email, password, loginButton, signUp],
             ),
           ),
         ),
       ),
-        inAsyncCall: _requesting,
+      inAsyncCall: _requesting,
     );
   }
 }
