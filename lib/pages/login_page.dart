@@ -132,17 +132,8 @@ class LoginPageState extends State<LoginPage> {
             if (value == null) {
               _displaySnackbar(_authentication.getErrorCode());
               _loginSuccessful = false;
-              if (_authentication
-                  .getErrorCode()
-                  .toLowerCase()
-                  .contains("email")) {
-                _emailFormKey.currentState.validate();
-              } else if (_authentication
-                  .getErrorCode()
-                  .toLowerCase()
-                  .contains("password")) {
-                _passwordFormKey.currentState.validate();
-              }
+              if (_authentication.getErrorCode().toLowerCase().contains("email"))  _emailFormKey.currentState.validate();
+              else if (_authentication.getErrorCode().toLowerCase().contains("password")) _passwordFormKey.currentState.validate();
               _loginSuccessful = true;
             } else {
               _displaySnackbar("Login Successful");

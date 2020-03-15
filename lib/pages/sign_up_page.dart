@@ -3,6 +3,8 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:asltranslate/resources/Auth.dart';
+import 'package:asltranslate/resources/User.dart';
+import 'package:asltranslate/resources/firestore.dart';
 
 class SignUpPage extends StatelessWidget {
   @override
@@ -75,9 +77,11 @@ class SignUpPageState extends State<SignUp> {
         child: TextFormField(
           controller: _nameController,
           validator: (value) {
-            if (value.isEmpty) {
-              return "Field Cannot Be Blank";
-            }
+            if (value.isEmpty) return "Field Cannot Be Blank";
+
+            final name = _nameController.text.trim();
+            if (name.split(" ").length != 2) return "Please Enter your First and Last Name!";
+
             return null;
           },
           decoration: InputDecoration(
@@ -175,7 +179,7 @@ class SignUpPageState extends State<SignUp> {
     );
   }
 
-  // Verifies Input is not Null or Empty
+  // Verifies Input is not Null or Empty, or Incorrect Input
   bool _verifyInput() {
     var keys = {_nameFormKey, _emailFormKey, _passFormKey, _cPassFormKey};
     for (GlobalKey<FormState> key in keys) {
@@ -192,8 +196,8 @@ class SignUpPageState extends State<SignUp> {
     return true;
   }
 
-  // Display Snackbar
-  void _displaySnackbar(msg) {
+  // Display SnackBar
+  void _displaySnackBar(msg) {
     Scaffold.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
@@ -201,11 +205,26 @@ class SignUpPageState extends State<SignUp> {
   Future<FirebaseUser> _submit() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    _displaySnackbar("Creating Your Account...");
+    _displaySnackBar("Creating Your Account...");
     setState(() {
       _saving = true;
     });
     return _authentication.signUp(email, password);
+  }
+
+  // Add New User to FireStore
+  void _addNewUser() {
+    final String name = _nameController.text.trim();
+    final String email = _emailController.text.trim();
+    User newUser = new User(name, email);
+    FireStore fireStore = new FireStore();
+    fireStore.addNewUser(newUser).then((_) {
+      setState(() {
+        _isSuccessful = true;
+      });
+      Scaffold.of(context).hideCurrentSnackBar();
+      _displaySnackBar("Account Created!");
+    });
   }
 
   // Handles SignUp Button onClick Event
@@ -228,10 +247,11 @@ class SignUpPageState extends State<SignUp> {
                 _passFormKey.currentState.validate();
                 _cPassFormKey.currentState.validate();
               }
+              Scaffold.of(context).hideCurrentSnackBar();
+              _displaySnackBar("Failed to Create Account");
               _isSuccessful = true;
             } else {
-              _isSuccessful = true;
-              _displaySnackbar("Account Created!");
+              _addNewUser();
             }
           })
         });
@@ -262,7 +282,7 @@ class SignUpPageState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     final title = _buildTitle();
-    final name = _nameFieldBuilder("Your Full Name");
+    final name = _nameFieldBuilder("First and Last Name");
     final email = _emailFieldBuilder("Email Address");
     final password = _passwordFieldBuilder("New Password");
     final cPassword = _confirmPasswordField("Confirm Password");
