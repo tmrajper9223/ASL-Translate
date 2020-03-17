@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'alphabet_index_page.dart';
+
 class CameraPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -18,11 +20,15 @@ class Camera extends StatefulWidget {
 }
 
 class CameraPageState extends State<Camera> {
+
+  final _pageController = PageController(
+    initialPage: 0,
+  );
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("Hello"),
+    return  Center(
+      child: Text("Hello From Camera"),
     );
   }
-
 }

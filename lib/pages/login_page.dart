@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'sign_up_page.dart';
 import 'camera_page.dart';
+import 'page_manager.dart';
+
 import 'package:asltranslate/resources/Auth.dart';
 
 class LoginPage extends StatefulWidget {
@@ -44,7 +46,7 @@ class LoginPageState extends State<LoginPage> {
   // Create New Camera Page
   Route _createCameraPageRoute() {
     return PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => CameraPage(),
+        pageBuilder: (context, animation, secondaryAnimation) => PageViewManager(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var begin = Offset(0.0, 1.0);
           var end = Offset.zero;
@@ -100,7 +102,7 @@ class LoginPageState extends State<LoginPage> {
         },
         decoration: InputDecoration(
             hintText: hint,
-            contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
+            contentPadding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
             enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(32.0),
                 borderSide: BorderSide(color: Colors.blueAccent, width: 2.0))),
