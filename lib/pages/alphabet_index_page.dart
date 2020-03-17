@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 
 class AlphabetIndexPage extends StatelessWidget {
@@ -29,7 +28,8 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
         context: context,
         builder: (BuildContext context) {
           return new Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
             child: Container(
               height: 450,
               width: 300,
@@ -38,7 +38,11 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                 children: <Widget>[
                   Padding(
                     padding: const EdgeInsets.all(15.0),
-                    child: Text(letter, style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w600),),
+                    child: Text(
+                      letter,
+                      style: TextStyle(
+                          fontSize: 30.0, fontWeight: FontWeight.w600),
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(15.0),
@@ -57,7 +61,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                             child: CircularProgressIndicator(
                               value: loadingProgress.expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes
+                                      loadingProgress.expectedTotalBytes
                                   : null,
                             ),
                           );
@@ -65,11 +69,17 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                       ),
                     ),
                   ),
-                  Padding(padding: const EdgeInsets.only(top: 5.0),),
-                  FlatButton(onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                    child: Text("Done", style: TextStyle(fontSize: 20.0),),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                  ),
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      "Done",
+                      style: TextStyle(fontSize: 20.0),
+                    ),
                   )
                 ],
               ),
@@ -148,8 +158,16 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
             onChanged: (value) {
               _onChanged(value);
             },
+            onFieldSubmitted: (value) {
+              _onSubmitted(value);
+            },
             validator: (value) {
-              return null;
+              if (value == null || value.isEmpty) return null;
+              if (!_alphabet.contains(value)) {
+                return "Sorry That Word/Character is Not Yet Supported";
+              } else {
+                return null;
+              }
             },
             decoration: InputDecoration(
                 hintText: "Search",
@@ -162,8 +180,17 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
         ));
   }
 
-  // Real Time Update From Search Bar
-  void _onChanged(value) {}
+  void _onSubmitted(value) {
+    FocusScope.of(context).requestFocus(new FocusNode());
+    _buildAlertDialog(value);
+  }
+
+  // Update User on What Words/Chars are available
+  void _onChanged(value) {
+    if (!_searchBarKey.currentState.validate()) {
+      return;
+    }
+  }
 
   // Load in Alphabet Characters
   void _loadAlphabet() {
@@ -177,22 +204,22 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
   @override
   Widget build(BuildContext context) {
     _loadAlphabet();
-    return Container(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: <Widget>[
-          _buildSearchBar(),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: _alphabet.length,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildCard(_alphabet[index]);
-              },
+    return  Container(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: <Widget>[
+            _buildSearchBar(),
+            Expanded(
+              child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: _alphabet.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildCard(_alphabet[index]);
+                },
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 }
