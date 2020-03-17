@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 
-import 'alphabet_index_page.dart';
+import 'package:asltranslate/resources/Camera.dart';
 
 class CameraPage extends StatelessWidget {
   @override
@@ -20,15 +21,34 @@ class Camera extends StatefulWidget {
 }
 
 class CameraPageState extends State<Camera> {
+  final cameras = InitCamera.cameras;
 
-  final _pageController = PageController(
-    initialPage: 0,
-  );
+  CameraController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = CameraController(cameras[0], ResolutionPreset.medium);
+    controller.initialize().then((_) {
+      if (!mounted) return;
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return  Center(
-      child: Text("Hello From Camera"),
+    if (!controller.value.isInitialized) {
+      return Container();
+    }
+    return AspectRatio(
+      aspectRatio: controller.value.aspectRatio,
+      child: CameraPreview(controller),
     );
   }
 }
