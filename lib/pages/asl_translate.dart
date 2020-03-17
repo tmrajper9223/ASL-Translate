@@ -12,8 +12,14 @@ class ASLTranslate extends StatelessWidget {
           title: Text("ASL Translate")
         ),
         body: Center(
-          child: LoginPage()
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(),
+              child: LoginPage(),
+            ),
+          )
         ),
+        resizeToAvoidBottomPadding: true,
       )
     );
   }

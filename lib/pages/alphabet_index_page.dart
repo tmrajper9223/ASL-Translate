@@ -8,6 +8,7 @@ class AlphabetIndexPage extends StatelessWidget {
       body: Center(
         child: AlphabetIndex(),
       ),
+      resizeToAvoidBottomPadding: true,
     );
   }
 }
@@ -113,7 +114,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                             children: <Widget>[
                               Padding(
                                 padding:
-                                    const EdgeInsets.only(left: 15.0, top: 5.0),
+                                    const EdgeInsets.only(left: 5.0, top: 5.0),
                                 child: Align(
                                   alignment: Alignment.center,
                                   child: Text(
@@ -130,7 +131,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                                   child: Text(
                                     "Tap Here to Display Hand Gesture",
                                     style: TextStyle(
-                                        fontSize: 15.0,
+                                        fontSize: 12.5,
                                         fontWeight: FontWeight.w200),
                                   ),
                                 ),
@@ -182,6 +183,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
 
   void _onSubmitted(value) {
     FocusScope.of(context).requestFocus(new FocusNode());
+    if (value == null || value.isEmpty) return;
     _buildAlertDialog(value);
   }
 

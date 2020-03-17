@@ -12,8 +12,14 @@ class SignUpPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text("Sign Up")),
       body: Center(
-        child: SignUp(),
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(),
+            child: SignUp(),
+          ),
+        ),
       ),
+      resizeToAvoidBottomPadding: true,
     );
   }
 }
