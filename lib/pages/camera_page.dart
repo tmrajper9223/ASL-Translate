@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:modal_progress_hud/modal_progress_hud.dart';
-
-import 'package:asltranslate/resources/Camera.dart';
-import 'package:asltranslate/resources/Camera.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class CameraPage extends StatelessWidget {
   @override
@@ -24,30 +21,47 @@ class Camera extends StatefulWidget {
 }
 
 class CameraPageState extends State<Camera> {
-  final cameras = InitCamera.cameras;
 
   CameraController controller;
-  bool _isInitialized = true;
+  List cameras;
+  int selectedCameraId;
 
   @override
   void initState() {
     super.initState();
-    controller = CameraController(cameras[0], ResolutionPreset.medium);
-    controller.initialize().then((_) {
-      if (!mounted) return;
-      setState(() {
-        _isInitialized = false;
-      });
+    availableCameras().then((availableCameras) {
+      cameras = availableCameras;
+      if (cameras.length > 0) {
+        setState(() {
+          selectedCameraId = 0;
+        });
+        _initCameraController(cameras[selectedCameraId]).then((void v) {});
+      } else {
+        print("No Camera Available");
+      }
+    }).catchError((err) {
+      print('Error: $err.code\nError Message: $err.message');
     });
   }
 
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
+  Future _initCameraController(CameraDescription cameraDescription) async {
+    if (controller != null) await controller.dispose();
+    controller = CameraController(cameraDescription, ResolutionPreset.medium);
+    controller.addListener(() {
+      if (mounted)
+        setState(() {});
+      if (controller.value.hasError) print("Camera error ${controller.value.errorDescription}");
+    });
+    try {
+      await controller.initialize();
+    } on CameraException catch (e) {
+     // _showCameraException(e);
+    }
+    if (mounted)
+      setState(() {});
   }
 
-  IconData _cameraLensIcon(lensDirection) {
+  IconData _getCameraIcon(CameraLensDirection lensDirection) {
     switch(lensDirection) {
       case CameraLensDirection.back:
         return Icons.camera_rear;
@@ -64,23 +78,40 @@ class CameraPageState extends State<Camera> {
     }
   }
 
-  Widget _toggleCameraWidget() {
-    if (InitCamera.cameras == null) return Row();
-    CameraDescription selectedCamera = InitCamera.cameras[0];
-    CameraLensDirection lensDirection = selectedCamera.lensDirection;
+  void _onSwitchCamera() {
+    selectedCameraId = (selectedCameraId < cameras.length-1) ? selectedCameraId+1 : 0;
+    CameraDescription selectedCamera = cameras[selectedCameraId];
+    _initCameraController(selectedCamera);
+  }
 
+  Widget _toggleCameraWidget() {
+    if (cameras == null || cameras.isEmpty) return Spacer();
+    CameraDescription selectedCamera = cameras[selectedCameraId];
+    CameraLensDirection lensDirection = selectedCamera.lensDirection;
     return Expanded(
       child: Align(
-       alignment: Alignment.centerLeft,
+        alignment: Alignment.centerLeft,
         child: FlatButton.icon(
             onPressed: () {
-              print("Toggle Clicked");
+              _onSwitchCamera();
             },
-            icon: Icon(_cameraLensIcon(lensDirection)),
-            label: Text("${lensDirection.toString().substring(lensDirection.toString().indexOf('.')+1)}")
+            icon: Icon(_getCameraIcon(lensDirection)),
+            label: Text(
+                "${lensDirection.toString().substring(lensDirection.toString().indexOf('.') + 1)}"
+            )
         ),
       ),
     );
+  }
+
+  void _onCapture(context) async {
+    try {
+      final path = join(
+          (await getTemporaryDirectory()).path,
+        "${DateTime.now()}"
+      );
+      await controller.takePicture(path);
+    }
   }
 
   Widget _captureWidget() {
@@ -104,6 +135,23 @@ class CameraPageState extends State<Camera> {
     );
   }
 
+  Widget _cameraPreviewWidget() {
+    if (controller == null || !controller.value.isInitialized) {
+      return Text(
+        "Loading",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.w900
+        ),
+      );
+    }
+    return AspectRatio(
+      aspectRatio: controller.value.aspectRatio,
+      child: CameraPreview(controller),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!controller.value.isInitialized) {
@@ -116,10 +164,7 @@ class CameraPageState extends State<Camera> {
             child: Padding(
               padding: const EdgeInsets.only(top: 1.0),
               child: Center(
-                  child: AspectRatio(
-                    aspectRatio: controller.value.aspectRatio,
-                    child: CameraPreview(controller),
-                  ),
+                child: _cameraPreviewWidget()
               ),
             ),
           ),
@@ -129,7 +174,7 @@ class CameraPageState extends State<Camera> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              _toggleCameraWidget(),
+             // _toggleCameraWidget(), Camera Preview for Front Camera not Adjusting to Lighting
               _captureWidget()
             ],
           ),
@@ -138,3 +183,4 @@ class CameraPageState extends State<Camera> {
     );
   }
 }
+
