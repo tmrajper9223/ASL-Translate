@@ -3,7 +3,6 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'sign_up_page.dart';
-import 'camera_page.dart';
 import 'page_manager.dart';
 
 import 'package:asltranslate/resources/Auth.dart';
@@ -22,16 +21,14 @@ class LoginPageState extends State<LoginPage> {
 
   final _authentication = new Authentication();
 
-  bool _requesting = false;
+  bool isLoggedIn = false;
   bool _loginSuccessful = true;
 
   // Display a SnackBar
   void _displaySnackBar(msg) {
     Scaffold.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      duration: const Duration(
-        seconds: 3
-      ),
+      duration: const Duration(seconds: 3),
     ));
   }
 
@@ -46,14 +43,15 @@ class LoginPageState extends State<LoginPage> {
   // Create New Camera Page
   Route _createCameraPageRoute() {
     return PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => PageViewManager(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            PageViewManager(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           var begin = Offset(0.0, 1.0);
           var end = Offset.zero;
           var curve = Curves.ease;
 
           var tween =
-          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
           return SlideTransition(
             position: animation.drive(tween),
@@ -118,7 +116,8 @@ class LoginPageState extends State<LoginPage> {
         controller: _passwordController,
         validator: (value) {
           if (value.isEmpty) return "Field Cannot Be Empty!";
-          if (_loginSuccessful == false) return "Password Invalid or Account Does Not Exist!";
+          if (_loginSuccessful == false)
+            return "Password Invalid or Account Does Not Exist!";
           return null;
         },
         obscureText: true,
@@ -137,7 +136,7 @@ class LoginPageState extends State<LoginPage> {
     var email = _emailController.text.trim();
     var password = _passwordController.text.trim();
     setState(() {
-      _requesting = true;
+      isLoggedIn = true;
     });
     return _authentication.signIn(email, password);
   }
@@ -152,8 +151,12 @@ class LoginPageState extends State<LoginPage> {
       setState(() {
         if (value == null) {
           _loginSuccessful = false;
-          if (_authentication.getErrorCode().toLowerCase().contains("email"))  _emailFormKey.currentState.validate();
-          else if (_authentication.getErrorCode().toLowerCase().contains("identifier")) _passwordFormKey.currentState.validate();
+          if (_authentication.getErrorCode().toLowerCase().contains("email"))
+            _emailFormKey.currentState.validate();
+          else if (_authentication
+              .getErrorCode()
+              .toLowerCase()
+              .contains("identifier")) _passwordFormKey.currentState.validate();
           _loginSuccessful = true;
           _displaySnackBar(_authentication.getErrorCode());
         } else {
@@ -162,7 +165,7 @@ class LoginPageState extends State<LoginPage> {
         }
       });
       setState(() {
-        _requesting = false;
+        isLoggedIn = false;
       });
     });
   }
@@ -226,18 +229,29 @@ class LoginPageState extends State<LoginPage> {
 
     return ModalProgressHUD(
       child: Center(
-        child: Container(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[title, email, password, loginButton, signUp],
-            ),
-          ),
-        ),
-      ),
-      inAsyncCall: _requesting,
+          child: SingleChildScrollView(
+        child: ConstrainedBox(
+            constraints: BoxConstraints(),
+            child: Center(
+              child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      title,
+                      email,
+                      password,
+                      loginButton,
+                      signUp
+                    ],
+                  ),
+                ),
+              ),
+            )),
+      )),
+      inAsyncCall: isLoggedIn,
     );
   }
 }

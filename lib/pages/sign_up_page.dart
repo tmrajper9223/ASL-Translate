@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'page_manager.dart';
 import 'package:asltranslate/resources/Auth.dart';
 import 'package:asltranslate/resources/User.dart';
 import 'package:asltranslate/resources/firestore.dart';
@@ -11,14 +12,7 @@ class SignUpPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Sign Up")),
-      body: Center(
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(),
-            child: SignUp(),
-          ),
-        ),
-      ),
+      body: SignUp(),
       resizeToAvoidBottomPadding: true,
     );
   }
@@ -44,6 +38,26 @@ class SignUpPageState extends State<SignUp> {
 
   bool _saving = false;
   bool _isSuccessful = true;
+
+  // Create New Camera Page
+  Route _createCameraPageRoute() {
+    return PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            PageViewManager(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          var begin = Offset(0.0, 1.0);
+          var end = Offset.zero;
+          var curve = Curves.ease;
+
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        });
+  }
 
   // Returns Container with Title Widget
   Widget _buildTitle() {
@@ -86,7 +100,8 @@ class SignUpPageState extends State<SignUp> {
             if (value.isEmpty) return "Field Cannot Be Blank";
 
             final name = _nameController.text.trim();
-            if (name.split(" ").length != 2) return "Please Enter your First and Last Name!";
+            if (name.split(" ").length != 2)
+              return "Please Enter your First and Last Name!";
 
             return null;
           },
@@ -230,6 +245,7 @@ class SignUpPageState extends State<SignUp> {
       });
       Scaffold.of(context).hideCurrentSnackBar();
       _displaySnackBar("Account Created!");
+      Navigator.of(context).push(_createCameraPageRoute());
     });
   }
 
@@ -297,23 +313,29 @@ class SignUpPageState extends State<SignUp> {
 
     return ModalProgressHUD(
       child: Center(
-        child: Container(
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                title,
-                name,
-                email,
-                password,
-                cPassword,
-                submitButton,
-                back
-              ],
-            ),
-          ),
+        child: SingleChildScrollView(
+          child: ConstrainedBox(
+              constraints: BoxConstraints(),
+              child: Center(
+                child: Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        title,
+                        name,
+                        email,
+                        password,
+                        cPassword,
+                        submitButton,
+                        back
+                      ],
+                    ),
+                  ),
+                ),
+              )),
         ),
       ),
       inAsyncCall: _saving,
