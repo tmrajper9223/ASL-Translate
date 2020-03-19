@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CameraPage extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,10 +112,15 @@ class CameraPageState extends State<Camera> {
         "${DateTime.now()}"
       );
       await controller.takePicture(path);
+      /**
+       * Open Dialog Box Of Image Here
+       */
+    } catch (e) {
+      print(e);
     }
   }
 
-  Widget _captureWidget() {
+  Widget _captureWidget(context) {
     return Expanded(
       child: Align(
         alignment: Alignment.center,
@@ -126,7 +132,7 @@ class CameraPageState extends State<Camera> {
               icon: const Icon(Icons.camera_alt),
               color: Colors.blue,
               onPressed: () {
-                (controller != null) && (controller.value.isInitialized) ? print("Captured") : print("Failed");
+                (controller != null) && (controller.value.isInitialized) ? _onCapture(context) : print("Failed");
               },
             )
           ],
@@ -175,7 +181,7 @@ class CameraPageState extends State<Camera> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
              // _toggleCameraWidget(), Camera Preview for Front Camera not Adjusting to Lighting
-              _captureWidget()
+              _captureWidget(context)
             ],
           ),
         )
