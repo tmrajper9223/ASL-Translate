@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart';
@@ -43,6 +45,59 @@ class CameraPageState extends State<Camera> {
     }).catchError((err) {
       print('Error: $err.code\nError Message: $err.message');
     });
+  }
+
+  Future<void> _buildAlertDialog(context, path) {
+    return showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return new Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)),
+            child: Container(
+              height: 600,
+              width: 300,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Text(
+                      "Placeholder Text",
+                      style: TextStyle(
+                          fontSize: 15.0, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(20.0)),
+                      child: Image.file(
+                        File(path),
+                        fit: BoxFit.fitHeight,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                  ),
+                  FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      "Done",
+                      style: TextStyle(fontSize: 20.0),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   Future _initCameraController(CameraDescription cameraDescription) async {
@@ -115,6 +170,7 @@ class CameraPageState extends State<Camera> {
       /**
        * Open Dialog Box Of Image Here
        */
+      _buildAlertDialog(context, path);
     } catch (e) {
       print(e);
     }
