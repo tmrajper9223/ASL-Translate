@@ -5,6 +5,8 @@ abstract class Auth {
   Future<FirebaseUser> signIn(String email, String password);
 
   Future<FirebaseUser> signUp(String email, String password);
+
+  Future<bool> signOut();
 }
 
 class Authentication implements Auth {
@@ -37,6 +39,19 @@ class Authentication implements Auth {
     } catch (e) {
       _errorCode = e.message;
       return null;
+    }
+  }
+
+  @override
+  Future<bool> signOut() async {
+    try {
+      return await _auth.signOut().then((val) {
+        return true;
+      });
+    } catch (e) {
+      return new Future<bool>(() {
+        return false;
+      });
     }
   }
 

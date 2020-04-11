@@ -55,7 +55,8 @@ class CameraPageState extends State<Camera> {
     });
   }
 
-  Future<void> _buildAlertDialog(context, path) {
+  Future<void> _buildAlertDialog(context, path, prediction) {
+    final label = prediction[0]["label"];
     return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
@@ -71,9 +72,9 @@ class CameraPageState extends State<Camera> {
                   Padding(
                     padding: const EdgeInsets.all(15.0),
                     child: Text(
-                      "Placeholder Text",
+                      "Prediction: $label",
                       style: TextStyle(
-                          fontSize: 15.0, fontWeight: FontWeight.w600),
+                          fontSize: 25.0, fontWeight: FontWeight.w600),
                     ),
                   ),
                   Padding(
@@ -134,8 +135,8 @@ class CameraPageState extends State<Camera> {
           "$imageName"
       );
       await controller.takePicture(path);
-      await TFLiteHelper.classifyImage(path);
-      _buildAlertDialog(context, path);
+      final prediction = await TFLiteHelper.classifyImage(path);
+      _buildAlertDialog(context, path, prediction);
     } catch (e) {
       print(e);
     }
