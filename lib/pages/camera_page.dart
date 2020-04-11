@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:asltranslate/resources/TfliteHelper.dart';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -29,6 +30,8 @@ class CameraPageState extends State<Camera> {
   List cameras;
   int selectedCameraId;
 
+  bool modelLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +47,12 @@ class CameraPageState extends State<Camera> {
       }
     }).catchError((err) {
       print('Error: $err.code\nError Message: $err.message');
+    });
+
+    TFLiteHelper.loadModel().then((value) {
+      setState(() {
+        modelLoaded = true;
+      });
     });
   }
 
@@ -106,19 +115,20 @@ class CameraPageState extends State<Camera> {
     controller.addListener(() {
       if (mounted)
         setState(() {});
-      if (controller.value.hasError) print("Camera error ${controller.value.errorDescription}");
+      if (controller.value.hasError) print(
+          "Camera error ${controller.value.errorDescription}");
     });
     try {
       await controller.initialize();
     } on CameraException catch (e) {
-     // _showCameraException(e);
+      // _showCameraException(e);
     }
     if (mounted)
       setState(() {});
   }
 
   IconData _getCameraIcon(CameraLensDirection lensDirection) {
-    switch(lensDirection) {
+    switch (lensDirection) {
       case CameraLensDirection.back:
         return Icons.camera_rear;
         break;
@@ -135,7 +145,8 @@ class CameraPageState extends State<Camera> {
   }
 
   void _onSwitchCamera() {
-    selectedCameraId = (selectedCameraId < cameras.length-1) ? selectedCameraId+1 : 0;
+    selectedCameraId =
+    (selectedCameraId < cameras.length - 1) ? selectedCameraId + 1 : 0;
     CameraDescription selectedCamera = cameras[selectedCameraId];
     _initCameraController(selectedCamera);
   }
@@ -153,7 +164,8 @@ class CameraPageState extends State<Camera> {
             },
             icon: Icon(_getCameraIcon(lensDirection)),
             label: Text(
-                "${lensDirection.toString().substring(lensDirection.toString().indexOf('.') + 1)}"
+                "${lensDirection.toString().substring(
+                    lensDirection.toString().indexOf('.') + 1)}"
             )
         ),
       ),
@@ -162,14 +174,15 @@ class CameraPageState extends State<Camera> {
 
   void _onCapture(context) async {
     try {
+      final imageName = DateTime.now();
       final path = join(
           (await getTemporaryDirectory()).path,
-        "${DateTime.now()}"
+          "$imageName"
       );
       await controller.takePicture(path);
-      /**
-       * Open Dialog Box Of Image Here
-       */
+      //await TFLiteHelper().saveImage(path);
+      //String newPath = await TFLiteHelper().localPath + '/image.jpg';
+      await TFLiteHelper.classifyImage(path);
       _buildAlertDialog(context, path);
     } catch (e) {
       print(e);
@@ -188,7 +201,9 @@ class CameraPageState extends State<Camera> {
               icon: const Icon(Icons.camera_alt),
               color: Colors.blue,
               onPressed: () {
-                (controller != null) && (controller.value.isInitialized) ? _onCapture(context) : print("Failed");
+                (controller != null) && (controller.value.isInitialized)
+                    ? _onCapture(context)
+                    : print("Failed");
               },
             )
           ],
@@ -202,9 +217,9 @@ class CameraPageState extends State<Camera> {
       return Text(
         "Loading",
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 20.0,
-          fontWeight: FontWeight.w900
+            color: Colors.white,
+            fontSize: 20.0,
+            fontWeight: FontWeight.w900
         ),
       );
     }
@@ -226,7 +241,7 @@ class CameraPageState extends State<Camera> {
             child: Padding(
               padding: const EdgeInsets.only(top: 1.0),
               child: Center(
-                child: _cameraPreviewWidget()
+                  child: _cameraPreviewWidget()
               ),
             ),
           ),
@@ -236,7 +251,7 @@ class CameraPageState extends State<Camera> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-             // _toggleCameraWidget(), Camera Preview for Front Camera not Adjusting to Lighting
+              // _toggleCameraWidget(), Camera Preview for Front Camera not Adjusting to Lighting
               _captureWidget(context)
             ],
           ),
