@@ -14,7 +14,7 @@ class ASLTranslate extends StatelessWidget {
       title: "ASL Translator",
       home: Scaffold(
         appBar: AppBar(
-          title: Text("ASL Translate")
+          title: Text("ASL Translate"),
         ),
         body: LoginPage(),
         resizeToAvoidBottomPadding: true,

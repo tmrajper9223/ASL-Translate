@@ -4,7 +4,16 @@ class AlphabetIndexPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Alphabet Index")),
+      appBar: AppBar(
+        title: Text("Index"),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: <Widget>[
+            ListTile(),
+          ],
+        ),
+      ),
       body: Center(
         child: AlphabetIndex(),
       ),
