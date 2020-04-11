@@ -127,51 +127,6 @@ class CameraPageState extends State<Camera> {
       setState(() {});
   }
 
-  IconData _getCameraIcon(CameraLensDirection lensDirection) {
-    switch (lensDirection) {
-      case CameraLensDirection.back:
-        return Icons.camera_rear;
-        break;
-      case CameraLensDirection.front:
-        return Icons.camera_front;
-        break;
-      case CameraLensDirection.external:
-        return Icons.camera;
-        break;
-      default:
-        return Icons.device_unknown;
-        break;
-    }
-  }
-
-  void _onSwitchCamera() {
-    selectedCameraId =
-    (selectedCameraId < cameras.length - 1) ? selectedCameraId + 1 : 0;
-    CameraDescription selectedCamera = cameras[selectedCameraId];
-    _initCameraController(selectedCamera);
-  }
-
-  Widget _toggleCameraWidget() {
-    if (cameras == null || cameras.isEmpty) return Spacer();
-    CameraDescription selectedCamera = cameras[selectedCameraId];
-    CameraLensDirection lensDirection = selectedCamera.lensDirection;
-    return Expanded(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: FlatButton.icon(
-            onPressed: () {
-              _onSwitchCamera();
-            },
-            icon: Icon(_getCameraIcon(lensDirection)),
-            label: Text(
-                "${lensDirection.toString().substring(
-                    lensDirection.toString().indexOf('.') + 1)}"
-            )
-        ),
-      ),
-    );
-  }
-
   void _onCapture(context) async {
     try {
       final imageName = DateTime.now();
@@ -180,8 +135,6 @@ class CameraPageState extends State<Camera> {
           "$imageName"
       );
       await controller.takePicture(path);
-      //await TFLiteHelper().saveImage(path);
-      //String newPath = await TFLiteHelper().localPath + '/image.jpg';
       await TFLiteHelper.classifyImage(path);
       _buildAlertDialog(context, path);
     } catch (e) {
@@ -189,30 +142,7 @@ class CameraPageState extends State<Camera> {
     }
   }
 
-  Widget _captureWidget(context) {
-    return Expanded(
-      child: Align(
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.camera_alt),
-              color: Colors.blue,
-              onPressed: () {
-                (controller != null) && (controller.value.isInitialized)
-                    ? _onCapture(context)
-                    : print("Failed");
-              },
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _cameraPreviewWidget() {
+  Widget _cameraFeedWidget(BuildContext context) {
     if (controller == null || !controller.value.isInitialized) {
       return Text(
         "Loading",
@@ -223,9 +153,56 @@ class CameraPageState extends State<Camera> {
         ),
       );
     }
-    return AspectRatio(
-      aspectRatio: controller.value.aspectRatio,
-      child: CameraPreview(controller),
+
+    final size = MediaQuery.of(context).size;
+    final deviceRatio = (size.width / size.height);
+
+
+    return new Transform.scale(
+      scale: controller.value.aspectRatio/deviceRatio,
+      child: AspectRatio(
+        aspectRatio: controller.value.aspectRatio,
+        child: Container(
+          child: Stack(
+            children: <Widget>[
+              new CameraPreview(controller),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  width: double.infinity,
+                  height: 120.0,
+                  padding: EdgeInsets.all(0.0),
+                  child: Stack(
+                    children: <Widget>[
+                      Align(
+                        alignment: Alignment.center,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                            onTap: () {
+                              _onCapture(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(0.0),
+                              child: Icon(
+                                Icons.camera,
+                                color: Colors.white,
+                                size: 60.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
     );
   }
 
@@ -238,24 +215,9 @@ class CameraPageState extends State<Camera> {
       children: <Widget>[
         Expanded(
           child: Container(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 1.0),
-              child: Center(
-                  child: _cameraPreviewWidget()
-              ),
-            ),
+              child: _cameraFeedWidget(context)
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              // _toggleCameraWidget(), Camera Preview for Front Camera not Adjusting to Lighting
-              _captureWidget(context)
-            ],
-          ),
-        )
       ],
     );
   }
