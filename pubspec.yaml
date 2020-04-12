@@ -57,7 +57,7 @@ flutter:
 
   assets:
     - assets/labels.txt
-    - assets/mobile-asl-model.tflite
+    - assets/mobile-asl-model-v1.0.0.tflite
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

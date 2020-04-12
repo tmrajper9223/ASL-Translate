@@ -132,7 +132,7 @@ class CameraPageState extends State<Camera> {
       final imageName = DateTime.now();
       final path = join(
           (await getTemporaryDirectory()).path,
-          "$imageName"
+          "$imageName.jpg"
       );
       await controller.takePicture(path);
       final prediction = await TFLiteHelper.classifyImage(path);

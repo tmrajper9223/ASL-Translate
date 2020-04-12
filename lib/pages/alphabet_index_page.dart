@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 
 import "package:asltranslate/resources/Auth.dart";
 import 'package:asltranslate/pages/asl_translate.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:asltranslate/resources/FireStore.dart';
 
 class AlphabetIndexPage extends StatelessWidget {
 
@@ -68,17 +70,12 @@ class AlphabetIndexPage extends StatelessWidget {
     switch (text) {
       case "Profile":
         {
-          _userProfileRoute();
+          _showUserProfile();
         }
         break;
       case "Log Out":
         {
           _signOutUser();
-        }
-        break;
-      default:
-        {
-          _functionMappingError();
         }
         break;
     }
@@ -104,12 +101,49 @@ class AlphabetIndexPage extends StatelessWidget {
     }
   }
 
-  void _userProfileRoute() {
-    print("User Profile Route Clicked");
-  }
-
-  void _functionMappingError() {
-    print("Error, Something Went Wrong...");
+  Future<void> _showUserProfile() async {
+    final user = await FireStore().retrieveUserInfo();
+    Navigator.of(ctx).pop();
+    return showDialog<void>(
+      context: ctx,
+      builder: (BuildContext context) {
+        return new Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0)
+          ),
+          child: Container(
+            height: 500,
+            width: 500,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Icon(
+                    Icons.person,
+                    size: 120.0,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Text(
+                    "${user['firstName']} ${user['lastName']}",
+                    style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Text(
+                    "${user['email']}",
+                    style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+    }
+    );
   }
 
   Route _loginPageRoute() {

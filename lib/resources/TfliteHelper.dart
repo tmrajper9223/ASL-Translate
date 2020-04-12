@@ -7,7 +7,7 @@ class TFLiteHelper {
 
   static Future<String> loadModel() async {
     return Tflite.loadModel(
-      model: "assets/mobile-asl-model.tflite",
+      model: "assets/mobile-asl-model-v1.0.0.tflite",
       labels: "assets/labels.txt"
     );
   }
@@ -15,10 +15,10 @@ class TFLiteHelper {
   static classifyImage(path) async {
     return await Tflite.runModelOnImage(
       path: path,
-      imageMean: 0.0,
-      imageStd: 255.0,
+      imageMean: 127.5,
+      imageStd: 127.5,
       numResults: 1,
-      threshold: 0.2,
+      threshold: 0.1,
       asynch: true
     ).then((value) {
       return value;
