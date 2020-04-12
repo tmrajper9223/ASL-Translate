@@ -177,6 +177,11 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
   final FirebaseStorage storage = FirebaseStorage(storageBucket: "gs://asl-translate-f03b2.appspot.com");
 
   List<String> _alphabet = new List<String>();
+  @override
+  void initState() {
+    super.initState();
+    _loadAlphabet();
+  }
 
   Future<void> _buildAlertDialog(letter) async {
     final String fileName = letter + "_test.jpg";
@@ -314,9 +319,14 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
           child: TextFormField(
             controller: _searchBarController,
             onChanged: (value) {
+              if (value == value.toLowerCase() && value.length == 1) {
+                value = value.toUpperCase();
+              }
               _onChanged(value);
             },
             onFieldSubmitted: (value) {
+              if (value.length > 1)
+                _onSubmitted(value);
               _onSubmitted(value.toUpperCase());
             },
             validator: (value) {
@@ -354,8 +364,8 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
   // Load in Alphabet Characters
   void _loadAlphabet() {
     _alphabet.clear();
-    for (int i = 65; i < 123; i++) {
-      if (i > 90 && i < 97) continue;
+    for (int i = 65; i < 91; i++) {
+      //if (i > 90 && i < 97) continue;
       _alphabet.add(String.fromCharCode(i));
     }
     _alphabet.add("space");
@@ -363,7 +373,6 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
 
   @override
   Widget build(BuildContext context) {
-    _loadAlphabet();
     return Container(
       padding: const EdgeInsets.all(8),
       child: Column(
