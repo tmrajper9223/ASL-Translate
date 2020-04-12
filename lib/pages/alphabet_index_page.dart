@@ -1,7 +1,8 @@
-import 'package:asltranslate/pages/asl_translate.dart';
 import "package:flutter/material.dart";
 
 import "package:asltranslate/resources/Auth.dart";
+import 'package:asltranslate/pages/asl_translate.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AlphabetIndexPage extends StatelessWidget {
 
@@ -139,9 +140,14 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
   final _searchBarController = TextEditingController();
   final _searchBarKey = GlobalKey<FormState>();
 
+  final FirebaseStorage storage = FirebaseStorage(storageBucket: "gs://asl-translate-f03b2.appspot.com");
+
   List<String> _alphabet = new List<String>();
 
-  Future<void> _buildAlertDialog(letter) {
+  Future<void> _buildAlertDialog(letter) async {
+    final String fileName = letter + "_test.jpg";
+    final ref = FirebaseStorage.instance.ref().child(fileName);
+    var url = await ref.getDownloadURL();
     return showDialog<void>(
         context: context,
         builder: (BuildContext context) {
@@ -170,7 +176,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                           border: Border.all(),
                           borderRadius: BorderRadius.circular(20.0)),
                       child: Image.network(
-                        'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg',
+                        url,
                         fit: BoxFit.cover,
                         loadingBuilder: (BuildContext context, Widget child,
                             ImageChunkEvent loadingProgress) {
@@ -231,12 +237,12 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                             children: <Widget>[
                               Padding(
                                 padding:
-                                    const EdgeInsets.only(left: 5.0, top: 5.0),
+                                    const EdgeInsets.only(left: 5.0, top: 10.0),
                                 child: Align(
                                   alignment: Alignment.center,
                                   child: Text(
                                     letter,
-                                    style: (TextStyle(fontSize: 60)),
+                                    style: (TextStyle(fontSize: 40)),
                                   ),
                                 ),
                               ),
@@ -277,11 +283,11 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
               _onChanged(value);
             },
             onFieldSubmitted: (value) {
-              _onSubmitted(value);
+              _onSubmitted(value.toUpperCase());
             },
             validator: (value) {
               if (value == null || value.isEmpty) return null;
-              if (!_alphabet.contains(value)) {
+              if (!_alphabet.contains(value.toUpperCase()) && !_alphabet.contains(value)) {
                 return "Sorry That Word/Character is Not Yet Supported";
               } else {
                 return null;
@@ -300,7 +306,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
 
   void _onSubmitted(value) {
     FocusScope.of(context).requestFocus(new FocusNode());
-    if (value == null || value.isEmpty) return;
+    if (value == null || value.isEmpty || !_alphabet.contains(value)) return;
     _buildAlertDialog(value);
   }
 
@@ -318,6 +324,7 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
       if (i > 90 && i < 97) continue;
       _alphabet.add(String.fromCharCode(i));
     }
+    _alphabet.add("space");
   }
 
   @override
