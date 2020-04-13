@@ -5,9 +5,11 @@ import 'package:tflite/tflite.dart';
 
 class TFLiteHelper {
 
+  var _counter = 0;
+
   static Future<String> loadModel() async {
     return Tflite.loadModel(
-      model: "assets/mobile-asl-model-v1.0.0.tflite",
+      model: "assets/mobile-asl-model-v1.0.1.tflite",
       labels: "assets/labels.txt"
     );
   }
@@ -15,12 +17,11 @@ class TFLiteHelper {
   static classifyImage(path) async {
     return await Tflite.runModelOnImage(
       path: path,
-      imageMean: 127.5,
-      imageStd: 127.5,
-      numResults: 1,
-      threshold: 0.1,
+      imageMean: 255.0,
+      imageStd: 255.0,
       asynch: true
     ).then((value) {
+      print(value);
       return value;
     });
   }
@@ -46,11 +47,14 @@ class TFLiteHelper {
     return directory.path;
   }
 
-  Future<File> saveImage(path) async {
+  Future<String> saveImage(path) async {
+    var nameCounter = _counter;
     var newPath = await localPath;
     img.Image decodedImage = img.decodeImage(File(path).readAsBytesSync());
-    img.Image resizedImage = img.copyResize(decodedImage, width: 64, height: 64);
-    return new File('$newPath/image.jpg')..writeAsBytesSync(img.encodeJpg(resizedImage));
+    img.Image resizedImage = img.copyResize(decodedImage, width: 224, height: 224);
+    new File('$newPath/image_$nameCounter.jpg')..writeAsBytesSync(img.encodeJpg(resizedImage));
+    _counter++;
+    return "$newPath/image_$nameCounter.jpg";
   }
 
 }

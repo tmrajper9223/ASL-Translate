@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:asltranslate/resources/TfliteHelper.dart';
+import 'package:asltranslate/resources/DrawerContainer.dart';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -14,9 +15,7 @@ class CameraPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
       ),
-      drawer: Drawer(
-        
-      ),
+      drawer: DrawerContainer().drawerContainer(context),
       body: Center(
         child: Camera(),
       ),

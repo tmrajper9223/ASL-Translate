@@ -1,17 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 
-import "package:asltranslate/resources/Auth.dart";
-import 'package:asltranslate/pages/asl_translate.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:asltranslate/resources/FireStore.dart';
+import 'package:asltranslate/resources/DrawerContainer.dart';
 
 class AlphabetIndexPage extends StatelessWidget {
 
-  final List<Map<IconData, String>> _drawerContents = [
-    {Icons.person: "Profile"},
-    {Icons.exit_to_app: "Log Out"}
-  ];
+
 
   static BuildContext ctx;
 
@@ -22,16 +17,7 @@ class AlphabetIndexPage extends StatelessWidget {
       appBar: AppBar(
         title: Text("Index"),
       ),
-      drawer: Drawer(
-          child: ListView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: _drawerContents.length,
-        itemBuilder: (BuildContext context, int index) {
-          Map<IconData, String> map = _drawerContents[index];
-          IconData icon = map.keys.toList()[0];
-          return _drawerContentWidget(icon, map[icon]);
-        },
-      )),
+      drawer: DrawerContainer().drawerContainer(context),
       body: Center(
         child: AlphabetIndex(),
       ),
@@ -39,130 +25,6 @@ class AlphabetIndexPage extends StatelessWidget {
     );
   }
 
-  Widget _drawerContentWidget(IconData icon, String text) {
-    return GestureDetector(
-      onTap: () {
-        _drawerFunction(text);
-      },
-        child: Container(
-      child: Row(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.fromLTRB(20.0, 30.0, 5.0, 10.0),
-            child: Icon(
-              icon,
-              size: 40.0,
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.fromLTRB(5.0, 30.0, 5.0, 10.0),
-            child: Text(
-              text,
-              style: TextStyle(fontSize: 20.0),
-            ),
-          ),
-        ],
-      ),
-    ));
-  }
-
-  void _drawerFunction(String text) {
-    switch (text) {
-      case "Profile":
-        {
-          _showUserProfile();
-        }
-        break;
-      case "Log Out":
-        {
-          _signOutUser();
-        }
-        break;
-    }
-  }
-
-  void _signOutUser() async {
-    try {
-      await Authentication().signOut().then((val) {
-        if (val) {
-          Navigator.of(ctx).push(_loginPageRoute());
-        } else {
-          Scaffold.of(ctx).showSnackBar(SnackBar(
-            content: Text("Error, Something Went Wrong, Please Try Again..."),
-            duration: new Duration(seconds: 3)
-          ));
-        }
-      });
-    } catch(e) {
-      Scaffold.of(ctx).showSnackBar(SnackBar(
-          content: Text("Error, Something Went Wrong, Please Try Again..."),
-          duration: new Duration(seconds: 3)
-      ));
-    }
-  }
-
-  Future<void> _showUserProfile() async {
-    final user = await FireStore().retrieveUserInfo();
-    Navigator.of(ctx).pop();
-    return showDialog<void>(
-      context: ctx,
-      builder: (BuildContext context) {
-        return new Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0)
-          ),
-          child: Container(
-            height: 500,
-            width: 500,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Icon(
-                    Icons.person,
-                    size: 120.0,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(
-                    "${user['firstName']} ${user['lastName']}",
-                    style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(
-                    "${user['email']}",
-                    style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-    }
-    );
-  }
-
-  Route _loginPageRoute() {
-    return PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => ASLTranslate(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          var begin = Offset(0.0, 1.0);
-          var end = Offset.zero;
-          var curve = Curves.ease;
-
-          var tween =
-          Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        });
-  }
 }
 
 class AlphabetIndex extends StatefulWidget {
@@ -281,13 +143,13 @@ class AlphabetIndexPageState extends State<AlphabetIndex> {
                                   alignment: Alignment.center,
                                   child: Text(
                                     letter,
-                                    style: (TextStyle(fontSize: 40)),
+                                    style: (TextStyle(fontSize: 35)),
                                   ),
                                 ),
                               ),
                               Padding(
                                 padding:
-                                    const EdgeInsets.only(left: 15.0, top: 5.0),
+                                    const EdgeInsets.only(left: 9.0, top: 5.0),
                                 child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
