@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:asltranslate/resources/DataPersistence.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 // Class for Register/login methods
 abstract class Auth {
   Future<FirebaseUser> signIn(String email, String password);
@@ -21,6 +24,7 @@ class Authentication implements Auth {
       final user = (await _auth.signInWithEmailAndPassword(
               email: email, password: password))
           .user;
+      await DataPersistence().setLoginPersistence(true);
       return user;
     } catch (e) {
       _errorCode = e.message;
@@ -45,6 +49,7 @@ class Authentication implements Auth {
   @override
   Future<bool> signOut() async {
     try {
+      await DataPersistence().setLoginPersistence(false);
       return await _auth.signOut().then((val) {
         return true;
       });

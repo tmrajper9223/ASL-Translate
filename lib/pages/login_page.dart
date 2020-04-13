@@ -6,6 +6,7 @@ import 'sign_up_page.dart';
 import 'page_manager.dart';
 
 import 'package:asltranslate/resources/Auth.dart';
+import 'package:asltranslate/resources/DataPersistence.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -23,6 +24,18 @@ class LoginPageState extends State<LoginPage> {
 
   bool isLoggedIn = false;
   bool _loginSuccessful = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void _checkLoginStatus() async {
+    if (await DataPersistence().checkIfLoggedIn()) {
+      Navigator.of(context).push(_createCameraPageRoute());
+    }
+  }
 
   // Display a SnackBar
   void _displaySnackBar(msg) {

@@ -11,7 +11,7 @@ class DrawerContainer {
     {Icons.exit_to_app: "Log Out"}
   ];
 
-  static BuildContext _ctx;
+  BuildContext _ctx;
 
   Widget drawerContainer(BuildContext context) {
     _ctx = context;
