@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:asltranslate/resources/DataPersistence.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // Class for Register/login methods
 abstract class Auth {
@@ -39,6 +38,7 @@ class Authentication implements Auth {
       final FirebaseUser newUser = (await _auth.createUserWithEmailAndPassword(
               email: email, password: password))
           .user;
+      await DataPersistence().setLoginPersistence(true);
       return newUser;
     } catch (e) {
       _errorCode = e.message;
